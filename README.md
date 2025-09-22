@@ -10,5 +10,5 @@ It simulates an Applicant Tracking System (ATS) and provides:
 
 ## Tech Stack
 - **Python (Flask)** – Backend
-- **Google Gemini API** – AI-powered resume evaluation
+- **Google Gemini API (version 1.5 flash)** – AI-powered resume evaluation
 - **HTML/CSS/JS** – Frontend UI
