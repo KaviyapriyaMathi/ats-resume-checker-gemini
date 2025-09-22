@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ATS Resume Evaluator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h2>ATS Resume Evaluator</h2>
+        <form method="POST" enctype="multipart/form-data" id="atsForm">
+            <label>Job Role</label>
+            <input type="text" name="job_role" placeholder="e.g. Data Analyst">
+
+            <label>Upload Resume (PDF)</label>
+            <input type="file" name="resume" accept=".pdf">
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit">Evaluate</button>
+                <button type="button" id="resetBtn" style="background: #6c757d;">🔄 Reset</button>
+            </div>
+        </form>
+        <div class="result-section" id="result"></div>
+    </div>
+    <script>
+        const form = document.getElementById("atsForm");
+        const resultBox = document.getElementById("result");
+        const resetBtn = document.getElementById("resetBtn");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            resultBox.innerHTML = "<p class='loading'>⏳ Evaluating resume...</p>";
+            const formData = new FormData(form);
+            const res = await fetch("/", {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+
+            resultBox.innerHTML = "";
+
+            if (data.error) {
+                resultBox.innerHTML = `<div class="card"><h4>Error</h4><p>${data.error}</p></div>`;
+                return;
+            }
+
+            resultBox.innerHTML += `
+            <div class="card">
+                <h4>ATS Score</h4>
+                <p class="score">${data.ATS_score} / 100</p>
+            </div>
+        `;
+
+            if (data.key_strengths?.length) {
+                resultBox.innerHTML += `
+                <div class="card">
+                    <h4>Key Strengths</h4>
+                    <ul>${data.key_strengths.map(item => `<li>${item}</li>`).join("")}</ul>
+                </div>
+            `;
+            }
+
+            if (data.missing_keywords?.length) {
+                resultBox.innerHTML += `
+                <div class="card">
+                    <h4>Missing Keywords</h4>
+                    <ul>${data.missing_keywords.map(item => `<li>${item}</li>`).join("")}</ul>
+                </div>
+            `;
+            }
+
+            if (data.feedback) {
+                resultBox.innerHTML += `
+                <div class="card">
+                    <h4>Feedback</h4>
+                    <p>${data.feedback}</p>
+                </div>
+            `;
+            }
+        });
+
+        // ✅ Reset button clears form + results
+        resetBtn.addEventListener("click", () => {
+            form.reset();
+            resultBox.innerHTML = "";
+        });
+    </script>
+
+</body>
+
+</html>
